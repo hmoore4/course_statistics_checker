@@ -1,0 +1,124 @@
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.PriorityQueue;
+import java.util.Comparator;
+import java.util.StringTokenizer;
+import java.util.List;
+import java.io.*;
+import java.util.Collections;
+
+/**
+ * This class manages all of the courses in the database
+ * 5/1/2019
+ * @author Hunter Moore
+ * @version 2.0
+ */
+
+
+public class CourseStatistics{
+	private int coursesAdded;
+	private int counter;
+	String word = null;
+	Map<String, Course> hashMap =  new HashMap<String, Course>();
+	PriorityQueue<Course> courses = new PriorityQueue<Course> (new CourseComparator());
+	
+	
+	/**
+	 * Default constructor, instantiates courses added to 0 to make a new inventory
+	 */ 
+	public CourseStatistics () {
+		coursesAdded = 0;
+		counter = 0;
+	}
+	
+ /**
+	* Adds course to map if it does not already exist. Updates values if it does.
+	* @param c The course that is to be added to the database
+	* Time Complexity: O(1) 
+	*/
+	public void addCourse (Course c) {
+		int students;
+		int votes;
+		if(hashMap.containsKey(c.getName())) {
+		  Course temp = hashMap.get(c.getName());		//Saves first information from previous course appearance
+			students = c.getStudents();				
+			votes = c.getVotes();
+			students += temp.getStudents();						//Adds new info to old info
+		  votes += temp.getVotes();
+	   	Course cUpdated = new Course(c.getName(), c.getTitle(), students, votes);		//Make new course with updated info
+	    hashMap.put(c.getName(), cUpdated);			//Puts course in Map
+		}
+		else {
+			hashMap.put(c.getName(), c);		//If name not in map, put it in
+			counter++;
+			coursesAdded++;		//Increase courses added
+		}
+	}
+		    
+	/**
+	 * Goes through map and checks if parameter is equal to any of the keys. If so, return the course
+	 * @reutrn Course returns course that has name equal to parameter
+	 * @param name name of course entered by user
+	 * Time complexity: O(N) 
+	 */
+	public Course getCourse(String name) {
+		for (Map.Entry<String, Course> entry: hashMap.entrySet()) {		//Goes through map
+			String key = entry.getKey();
+			if (name.equals(key)) {										//If param equals the course name (key)
+				return entry.getValue();								//Return value (Course)
+			}
+		}  
+		System.out.println("No such course! Try again.");		//Else, print error
+		return null;
+	}
+	
+	
+	
+	/**
+	 * Goes through the map and prints the description
+	 * Time complexity: O(N)
+	 */
+	public void displayAll() {
+		System.out.println("*** Displaying courses and their full descriptions...");
+		System.out.println("Displaying " + coursesAdded + " courses.");
+		for (Map.Entry<String, Course> Entry: hashMap.entrySet()) {				//Goes through map
+			Course key = Entry.getValue();																	//Get course
+			System.out.println( key.description());													//Print description
+			}
+		}
+		
+	/**
+	 * Goes through the map and prints the description and their recommendation rates, sorted by score
+	 * Time complexity: O(N)
+	 */
+	public void displayStats() {
+		System.out.println("*** Displaying courses sorted by their recommendation rates...");
+		for (Map.Entry<String, Course> Entry: hashMap.entrySet()) {	
+			courses.add(Entry.getValue());										//Adds all courses to priority queue
+		}
+		while(!courses.isEmpty()) {
+			Course temp = courses.poll();											//Removes top course
+			String key = temp.getName();
+			double value = temp.getScore();
+			System.out.println(temp.toString());
+			//System.out.println( key + ":" + String.format("%.0f", value) + "%");
+		}
+	}
+	
+	/**
+	 * Goes through the map and prints the description and their recommendation rates, sorted by score
+	 * Time complexity: O(N) - worst case if the user compares all possible courses.
+	 */
+	public void findBest(List<Course> courses) {
+
+	PriorityQueue<Course> bestCourses = new PriorityQueue<Course> (new CourseComparator());
+		Iterator<Course> iter = courses.iterator();
+		while (iter.hasNext()){
+			bestCourses.add(iter.next());					//Moves course from list to priority queue
+		}
+		Course temp = bestCourses.poll();				//Removes first course from priorityqueue
+		System.out.println("Best course to take: " + temp.description());
+	}
+}
